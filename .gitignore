@@ -1,0 +1,4 @@
+reports/*.csv
+reports/*.html
+logs/*
+*.log

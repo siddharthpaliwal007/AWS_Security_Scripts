@@ -1,0 +1,123 @@
+#!/bin/bash
+
+source ./common.sh
+
+SERVICE="IAM"
+
+create_report_dir
+
+REPORT_FILE="reports/iam-report.csv"
+HTML_FILE="reports/iam-report.html"
+
+init_csv "$REPORT_FILE"
+
+##################################################
+# Root MFA
+##################################################
+
+ROOT_MFA=$(aws iam get-account-summary \
+--query 'SummaryMap.AccountMFAEnabled' \
+--output text 2>/dev/null)
+
+if [[ "$ROOT_MFA" == "1" ]]; then
+    write_result global IAM ROOT_MFA Root PASS CRITICAL "Root MFA enabled"
+else
+    write_result global IAM ROOT_MFA Root FAIL CRITICAL "Root MFA NOT enabled"
+fi
+
+##################################################
+# Root Access Keys
+##################################################
+
+ROOT_KEYS=$(aws iam get-account-summary \
+--query 'SummaryMap.AccountAccessKeysPresent' \
+--output text 2>/dev/null)
+
+if [[ "$ROOT_KEYS" == "0" ]]; then
+    write_result global IAM ROOT_ACCESS_KEYS Root PASS HIGH "No root access keys"
+else
+    write_result global IAM ROOT_ACCESS_KEYS Root FAIL HIGH "Root access keys present"
+fi
+
+##################################################
+# Password Policy
+##################################################
+
+aws iam get-account-password-policy >/dev/null 2>&1
+
+if [[ $? -eq 0 ]]; then
+    write_result global IAM PASSWORD_POLICY Account PASS MEDIUM "Password policy configured"
+else
+    write_result global IAM PASSWORD_POLICY Account FAIL MEDIUM "Password policy missing"
+fi
+
+##################################################
+# Users Without MFA
+##################################################
+
+USERS=$(aws iam list-users \
+--query 'Users[*].UserName' \
+--output text 2>/dev/null)
+
+for USER in $USERS
+do
+    MFA=$(aws iam list-mfa-devices \
+        --user-name "$USER" \
+        --query 'MFADevices[*].SerialNumber' \
+        --output text 2>/dev/null)
+
+    if [[ -z "$MFA" ]]; then
+        write_result global IAM USER_MFA "$USER" FAIL HIGH "User without MFA"
+    else
+        write_result global IAM USER_MFA "$USER" PASS LOW "MFA enabled"
+    fi
+done
+
+##################################################
+# Access Keys Older Than 90 Days
+##################################################
+
+for USER in $USERS
+do
+    aws iam list-access-keys \
+    --user-name "$USER" \
+    --query 'AccessKeyMetadata[*].[AccessKeyId,CreateDate]' \
+    --output text 2>/dev/null |
+    while read KEY CREATED
+    do
+
+        AGE=$(( ($(date +%s) - $(date -d "$CREATED" +%s)) / 86400 ))
+
+        if (( AGE > 90 )); then
+            write_result global IAM OLD_ACCESS_KEY "$KEY" FAIL HIGH "Access key age=$AGE days"
+        else
+            write_result global IAM OLD_ACCESS_KEY "$KEY" PASS LOW "Access key age=$AGE days"
+        fi
+
+    done
+done
+
+##################################################
+# AdministratorAccess Attachments
+##################################################
+
+for USER in $USERS
+do
+    POLICIES=$(aws iam list-attached-user-policies \
+    --user-name "$USER" \
+    --query 'AttachedPolicies[*].PolicyName' \
+    --output text 2>/dev/null)
+
+    if echo "$POLICIES" | grep -q AdministratorAccess
+    then
+        write_result global IAM ADMIN_ACCESS "$USER" FAIL HIGH "AdministratorAccess attached"
+    fi
+done
+
+generate_html "$REPORT_FILE" "$HTML_FILE"
+
+echo
+echo "CSV Report : $REPORT_FILE"
+echo "HTML Report: $HTML_FILE"
+echo
+echo "IAM Audit Complete"

@@ -1,171 +1,520 @@
-# Service Descriptions
+# AWS Security Audit Framework - Service Descriptions
 
 ## Overview
 
-This document describes the purpose of each script currently available in the AWS Security Audit Framework.
+This document provides a summary of security checks performed by each service module in the AWS Security Audit Framework.
 
-The framework is designed to perform AWS security assessments and generate easy-to-understand reports in both CSV and HTML formats.
-
----
-
-# bootstrap.sh
-
-## Purpose
-
-The bootstrap script prepares the environment before any security audits are executed.
-
-This script should be run once during the initial setup.
-
-## What it does
-
-* Verifies AWS access
-* Detects AWS Account ID
-* Creates the report storage bucket (if required)
-* Creates local report folders
-* Generates the configuration file (`config.conf`)
-* Prepares the framework for future audit scripts
-
-## When to run
-
-Run before executing any audit script.
-
-Example:
-
-```bash
-./bootstrap.sh
-```
+Each script performs read-only AWS security assessments and generates CSV and HTML reports.
 
 ---
 
-# common.sh
+# IAM (Identity and Access Management)
 
-## Purpose
+Script:
 
-This file contains common functions shared by all audit scripts.
+`check-iam.sh`
 
-It is the core utility library used throughout the framework.
+Checks:
 
-## What it does
-
-* Creates report directories
-* Generates CSV reports
-* Generates HTML reports
-* Formats audit results
-* Validates report bucket availability
-* Uploads reports to Amazon S3
-* Handles common framework functions
-
-## Important
-
-This file is **not executed directly**.
-
-It is automatically used by audit scripts.
-
-Example:
-
-```bash
-source ./common.sh
-```
+- Root account MFA status
+- Root access key usage
+- IAM user MFA configuration
+- Password policy configuration
+- Old access keys
+- Unused access keys
+- High privilege user permissions
+- AdministratorAccess policies
+- IAMFullAccess policies
+- Privileged IAM roles
 
 ---
 
-# check-iam.sh
+# CloudTrail
 
-## Service
+Script:
 
-AWS Identity and Access Management (IAM)
+`check-cloudtrail.sh`
 
-## Purpose
+Checks:
 
-Performs security checks against IAM users, credentials, permissions, and roles.
-
-The script helps identify common IAM security risks and privilege management issues.
-
-## Security Checks Performed
-
-### Root Account Security
-
-* Root MFA enabled
-* Root access keys present
-
-### User Security
-
-* User MFA enabled
-* Unused users
-* User credential review
-
-### Password Policy
-
-* Password policy configured
-
-### Access Keys
-
-* Access keys older than 90 days
-* Unused access keys
-
-### Excessive Permissions
-
-* AdministratorAccess permissions
-* IAMFullAccess permissions
-* PowerUserAccess permissions
-
-### Role Policy Review
-
-* Roles with AdministratorAccess
-* Roles with IAMFullAccess
-
-## Report Output
-
-The script generates:
-
-```text
-reports/
-├── iam-report.csv
-└── iam-report.html
-```
-
-If automatic uploads are enabled, reports are also uploaded to the configured Amazon S3 report bucket.
-
-## Example
-
-Run the IAM audit:
-
-```bash
-./check-iam.sh
-```
+- CloudTrail enabled status
+- Multi-region trail configuration
+- Log file validation
+- CloudWatch Logs integration
+- Trail encryption status
+- S3 logging configuration
 
 ---
 
-# Future Services
+# Amazon S3
 
-Additional AWS service audit scripts will be added over time.
+Script:
 
-Examples include:
+`check-s3.sh`
 
-* CloudTrail
-* S3
-* EC2
-* RDS
-* CloudWatch
-* AWS Config
-* KMS
-* ECR
-* ECS
-* GuardDuty
-* Security Hub
-* WAF
-* And other AWS services
+Checks:
 
-This document will be updated as new audit scripts are introduced.
+- Public bucket access
+- Bucket encryption status
+- Versioning configuration
+- MFA delete configuration
+- Bucket logging status
+- Bucket policy review
 
 ---
 
-# Current Framework Version
+# EC2
 
-Version: 1.0
+Script:
 
-Current Scripts:
+`check-ec2.sh`
 
-* bootstrap.sh
-* common.sh
-* check-iam.sh
+Checks:
+
+- Instance security configuration
+- Public exposure checks
+- Instance state review
+- IMDS configuration
+- Monitoring configuration
+- Instance metadata settings
+
+---
+
+# Security Groups
+
+Script:
+
+`check-security-groups.sh`
+
+Checks:
+
+- Open inbound ports
+- Public SSH exposure
+- Public RDP exposure
+- Wide CIDR access rules
+- Unrestricted security groups
+
+---
+
+# VPC
+
+Script:
+
+`check-vpc.sh`
+
+Checks:
+
+- VPC configuration review
+- Subnet configuration
+- Route table checks
+- Internet Gateway exposure
+- Network configuration review
+
+---
+
+# RDS
+
+Script:
+
+`check-rds.sh`
+
+Checks:
+
+- Public database exposure
+- Encryption status
+- Backup configuration
+- Deletion protection
+- Multi-AZ configuration
+- Database security settings
+
+---
+
+# Lambda
+
+Script:
+
+`check-lambda.sh`
+
+Checks:
+
+- Function configuration
+- Runtime versions
+- Environment variable review
+- Function permissions
+- Public access checks
+
+---
+
+# EBS
+
+Script:
+
+`check-ebs.sh`
+
+Checks:
+
+- Volume encryption status
+- Unattached volumes
+- Snapshot exposure
+- Storage security configuration
+
+---
+
+# CloudFormation
+
+Script:
+
+`check-cloudformation.sh`
+
+Checks:
+
+- Stack status
+- Termination protection
+- Template configuration
+- Stack security review
+
+---
+
+# CloudWatch
+
+Script:
+
+`check-cloudwatch.sh`
+
+Checks:
+
+- Log group configuration
+- Log retention settings
+- Monitoring configuration
+- Alarm availability
+
+---
+
+# AWS Config
+
+Script:
+
+`check-config.sh`
+
+Checks:
+
+- Config recorder status
+- Delivery channel configuration
+- Compliance monitoring status
+
+---
+
+# KMS
+
+Script:
+
+`check-kms.sh`
+
+Checks:
+
+- Key rotation status
+- Key status
+- Customer managed keys
+- Key configuration review
+
+---
+
+# SNS
+
+Script:
+
+`check-sns.sh`
+
+Checks:
+
+- Topic encryption
+- Public access policies
+- Topic configuration
+
+---
+
+# SQS
+
+Script:
+
+`check-sqs.sh`
+
+Checks:
+
+- Queue encryption
+- Access policy review
+- Public access configuration
+
+---
+
+# Secrets Manager
+
+Script:
+
+`check-secretsmanager.sh`
+
+Checks:
+
+- Secret rotation status
+- Encryption configuration
+- Secret age review
+
+---
+
+# ECR
+
+Script:
+
+`check-ecr.sh`
+
+Checks:
+
+- Repository scanning
+- Image security settings
+- Encryption configuration
+- Repository policies
+
+---
+
+# ECS
+
+Script:
+
+`check-ecs.sh`
+
+Checks:
+
+- Cluster configuration
+- Service security settings
+- Task definition review
+- Container configuration
+
+---
+
+# EKS
+
+Script:
+
+`check-eks.sh`
+
+Checks:
+
+- Cluster security configuration
+- Endpoint access settings
+- Kubernetes version review
+- Logging configuration
+
+---
+
+# GuardDuty
+
+Script:
+
+`check-guardduty.sh`
+
+Checks:
+
+- GuardDuty enabled status
+- Detector configuration
+- Threat monitoring availability
+
+---
+
+# Security Hub
+
+Script:
+
+`check-securityhub.sh`
+
+Checks:
+
+- Security Hub enabled status
+- Security standards configuration
+- Finding aggregation status
+
+---
+
+# Macie
+
+Script:
+
+`check-macie.sh`
+
+Checks:
+
+- Macie enabled status
+- Sensitive data discovery configuration
+- Account configuration
+
+---
+
+# Route 53
+
+Script:
+
+`check-route53.sh`
+
+Checks:
+
+- Hosted zone configuration
+- DNS security settings
+- Domain configuration review
+
+---
+
+# Elastic Load Balancer
+
+Script:
+
+`check-elb.sh`
+
+Checks:
+
+- Load balancer configuration
+- HTTPS listener usage
+- SSL/TLS configuration
+- Public exposure checks
+
+---
+
+# ACM
+
+Script:
+
+`check-acm.sh`
+
+Checks:
+
+- Certificate status
+- Expired certificates
+- Certificate validation
+
+---
+
+# Redshift
+
+Script:
+
+`check-redshift.sh`
+
+Checks:
+
+- Cluster encryption
+- Public accessibility
+- Backup configuration
+- Security settings
+
+---
+
+# DynamoDB
+
+Script:
+
+`check-dynamodb.sh`
+
+Checks:
+
+- Table encryption
+- Backup configuration
+- Point-in-time recovery status
+
+---
+
+# ElastiCache
+
+Script:
+
+`check-elasticache.sh`
+
+Checks:
+
+- Encryption configuration
+- Cluster security settings
+- Backup configuration
+
+---
+
+# AWS Organizations
+
+Script:
+
+`check-organizations.sh`
+
+Checks:
+
+- Organization configuration
+- Account structure
+- Service control policy review
+
+---
+
+# Access Analyzer
+
+Script:
+
+`check-access-analyzer.sh`
+
+Checks:
+
+- Analyzer status
+- External access findings
+- Resource exposure checks
+
+---
+
+# Inspector
+
+Script:
+
+`check-inspector.sh`
+
+Checks:
+
+- Inspector enabled status
+- Vulnerability scanning status
+- Assessment configuration
+
+---
+
+# WAF & Shield
+
+Script:
+
+`check-waf.sh`
+
+Checks:
+
+- Web ACL configuration
+- Rule configuration
+- Protection status
+
+---
+
+# AWS Backup
+
+Script:
+
+`check-backup.sh`
+
+Checks:
+
+- Backup vault configuration
+- Backup plans
+- Backup protection status
+
+---
+
+# Summary
+
+The AWS Security Audit Framework provides security visibility across:
+
+- Identity Security
+- Network Security
+- Data Protection
+- Encryption
+- Logging & Monitoring
+- Threat Detection
+- Backup & Recovery
+- Compliance Configuration
+
+All checks are performed using AWS read-only operations.

@@ -2,184 +2,306 @@
 
 ## Overview
 
-AWS Security Audit Framework is a collection of scripts used to perform security assessments across multiple AWS services.
+AWS Security Audit Framework is a lightweight, production-safe security assessment framework built using Bash and AWS CLI.
+
+It helps evaluate the security posture of AWS environments by performing automated checks across multiple AWS services and generating easy-to-review security reports.
+
+The framework is designed to be:
+
+- Production Safe
+- Read Only
+- AWS CLI Based
+- Modular
+- Lightweight
+- CloudShell Compatible
+- Easy to Extend
+
+The framework does not modify, delete, or update AWS resources. It only performs security checks using AWS read APIs.
 
 The framework generates:
 
-* CSV Reports
-* HTML Reports
-* Optional S3 Report Uploads
+- CSV Reports
+- HTML Reports
+- Consolidated Security Dashboard
+- Optional Amazon S3 Report Uploads
 
-The reports help identify security misconfigurations and provide an easy-to-understand view of the AWS environment.
 
----
-
-# Supported AWS Services
+## Supported AWS Services
 
 The framework currently supports security audits for the following AWS services:
 
-1. IAM
-2. CloudTrail
-3. S3
-4. EC2
-5. Security Groups
-6. VPC
-7. RDS
-8. Lambda
-9. EBS
-10. CloudFormation
-11. CloudWatch
-12. AWS Config
-13. KMS
-14. SNS
-15. SQS
-16. Secrets Manager
-17. ECR
-18. ECS
-19. EKS
-20. GuardDuty
-21. Security Hub
-22. Macie
-23. Route 53
-24. Elastic Load Balancer (ALB/NLB)
-25. ACM
-26. Redshift
-27. DynamoDB
-28. ElastiCache
-29. AWS Organizations
-30. Access Analyzer
-31. Inspector
-32. WAF & Shield
-33. AWS Backups
+- IAM
+- CloudTrail
+- S3
+- EC2
+- Security Groups
+- VPC
+- RDS
+- Lambda
+- EBS
+- CloudFormation
+- CloudWatch
+- AWS Config
+- KMS
+- SNS
+- SQS
+- Secrets Manager
+- ECR
+- ECS
+- EKS
+- GuardDuty
+- Security Hub
+- Macie
+- Route 53
+- Elastic Load Balancer (ALB/NLB)
+- ACM
+- Redshift
+- DynamoDB
+- ElastiCache
+- AWS Organizations
+- Access Analyzer
+- Inspector
+- WAF & Shield
+- AWS Backup
 
 For detailed information about what each service audit checks, see:
 
-```text
+```
 SERVICE_DESCRIPTIONS.md
 ```
 
----
+# Getting Started
 
-# Initial Setup
+## 1. Clone the Repository
 
-Make all scripts executable:
+Open AWS CloudShell or any Linux environment configured with AWS CLI access.
+
+Clone the project:
+
+```bash
+git clone <repository-url>
+```
+
+Move into the project directory:
+
+```bash
+cd AWS_Security_Framework
+```
+
+
+## 2. Provide Execute Permission
+
+Make all framework scripts executable:
 
 ```bash
 chmod +x *.sh
 ```
 
-Run the bootstrap script:
+
+## 3. Run Complete AWS Security Assessment
+
+To scan all supported AWS services, execute:
+
+```bash
+./run-all.sh
+```
+
+This is the recommended execution method.
+
+The master script will automatically:
+
+- Validate AWS CLI configuration
+- Verify AWS authentication
+- Execute initialization if required
+- Run all service audit scripts
+- Continue execution even if one service check fails
+- Generate individual service reports
+- Generate consolidated security dashboard
+- Upload reports to S3 (if enabled)
+
+
+Execution example:
+
+```
+============================================================
+ AWS SECURITY AUDIT FRAMEWORK
+============================================================
+...
+
+AWS SECURITY AUDIT COMPLETED
+```
+
+# Running Individual Service Audit
+
+Individual service checks can also be executed separately.
+
+First initialize the framework:
 
 ```bash
 ./bootstrap.sh
 ```
 
-The bootstrap script will:
-
-* Verify AWS connectivity
-* Create required folders
-* Generate configuration files
-* Create the report storage bucket (if required)
-
----
-
-# Running an Audit
-
-Run the desired audit script.
+Then execute the required service audit script.
 
 Example:
+
+IAM Audit:
 
 ```bash
 ./check-iam.sh
 ```
 
-Additional service scripts follow the same format:
+All service scripts follow the same naming format:
 
 ```bash
-./check-cloudtrail.sh
-./check-s3.sh
-./check-ec2.sh
+./check-<service-name>.sh
 ```
 
----
 
-# Report Location
+# Reports
 
-Generated reports are stored locally in:
+## Local Reports
 
-```text
+After successful execution, reports are generated inside:
+
+```
 reports/
 ```
-
 Example:
 
-```text
+```
 reports/
+
 ├── iam-report.csv
-└── iam-report.html
+├── iam-report.html
+
+└── master-security-dashboard.html
 ```
 
----
+Each service generates:
 
-# Report Uploads
+### CSV Report
 
-If automatic uploads are enabled, reports will also be uploaded to Amazon S3.
+Contains raw security findings:
 
-The upload location will be displayed after the script completes.
+- Account ID
+- Region
+- Service
+- Check Name
+- Resource
+- Status
+- Severity
+- Details
 
----
 
-# Recommended Usage
+### HTML Report
 
-For a new environment:
+Provides an interactive security dashboard containing:
 
-```bash
-chmod +x *.sh
-./bootstrap.sh
-./check-iam.sh
+- Summary cards
+- Search
+- Filters
+- PASS / FAIL status
+- Severity levels
+- Detailed findings
+
+
+## Amazon S3 Report Upload
+
+If automatic upload is enabled, reports are uploaded to the configured S3 bucket.
+
+Example structure:
+
+```
+s3://security-report-bucket/
+└── Account-ID/
+    └── Date/
+        ├── iam/
+        │
+        │
+        └── master-security-dashboard.html
 ```
 
-For future audits:
-
-```bash
-./check-<service>.sh
-```
-
-Example:
-
-```bash
-./check-s3.sh
-./check-cloudtrail.sh
-./check-ec2.sh
-```
-
----
+The upload location is displayed after successful execution.
 
 # Troubleshooting
 
-If configuration files are missing:
+## AWS Authentication Failure
+
+Verify AWS credentials:
 
 ```bash
-./bootstrap.sh
+aws sts get-caller-identity
 ```
 
-If script execution fails:
+Ensure the configured IAM user or role has required read permissions.
+
+## Permission Denied While Running Scripts
+
+Provide execute permission again:
 
 ```bash
 chmod +x *.sh
 ```
 
-If report uploads fail:
 
-* Verify AWS permissions
-* Verify the S3 report bucket exists
+## Missing Configuration File
 
----
+Re-run initialization:
 
-# Documentation
-
-Detailed service-level audit descriptions are available in:
-
-```text
-SERVICE_DESCRIPTIONS.md
+```bash
+./bootstrap.sh
 ```
+
+## Reports Are Not Uploaded To S3
+
+Verify:
+
+- S3 bucket exists
+- AWS permissions are available
+- Upload configuration is enabled
+
+## Script Execution Issues
+
+Check framework logs:
+
+```
+logs/
+```
+
+The master execution log is available at:
+
+```
+logs/run-all.log
+```
+
+# Project Structure
+
+```
+AWS_Security_Framework/
+
+├── bootstrap.sh
+├── common.sh
+├── run-all.sh
+├── config.conf
+
+├── check-iam.sh
+├── check-s3.sh
+├── ...
+
+├── reports/
+└── logs/
+```
+
+# Security Notice
+
+This framework performs read-only security assessments.
+
+It does not:
+
+- Delete resources
+- Modify configurations
+- Enable or disable AWS services
+- Change IAM permissions
+
+All checks are performed using AWS CLI read operations.

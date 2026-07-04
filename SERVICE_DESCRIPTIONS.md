@@ -1,4 +1,4 @@
-# AWS Security Audit Framework - Service Descriptions
+# Service Descriptions
 
 ## Overview
 

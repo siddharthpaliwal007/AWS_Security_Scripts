@@ -79,7 +79,7 @@ Open AWS CloudShell or any Linux environment configured with AWS CLI access.
 Clone the project:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/siddharthpaliwal007/AWS_Security_Scripts.git
 ```
 
 Move into the project directory:
